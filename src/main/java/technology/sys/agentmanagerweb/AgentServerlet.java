@@ -5,6 +5,7 @@ import cz.muni.fi.pv168.gmiterkosys.AgentManager;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -35,29 +36,46 @@ public class AgentServerlet extends HttpServlet {
             case "/add":
                 
                 String name = request.getParameter("name");
-                String born = request.getParameter("born");
-                String died = request.getParameter("died");
-                String level = request.getParameter("level");
+                LocalDate born;
+                LocalDate died;
+                int level;
                 
                 //kontrola vyplnění hodnot
                 if (
                         name == null || name.length() == 0 ||
-                        born == null || born.length() == 0||
-                        died == null || died.length() == 0 ||
-                        level == null || level.length()==0 )
+                        request.getParameter("born") == null || request.getParameter("born").length() == 0||
+                        request.getParameter("died") == null || request.getParameter("died").length() == 0 ||
+                        request.getParameter("level") == null || request.getParameter("level").length()==0 )
                 {
                     request.setAttribute("error", "all atributes are required");
                     showAllAgent(request, response);
                     return;
+                }else{
+                    try{
+                        born = LocalDate.parse(request.getParameter("born"));
+                        died = LocalDate.parse(request.getParameter("died"));
+                    }catch(DateTimeParseException e){
+                        request.setAttribute("error", "date format not correct");
+                        showAllAgent(request, response);
+                        return;
+                    }
+                    try{
+                        level = Integer.parseInt(request.getParameter("level"));
+                    }catch(NumberFormatException e){
+                        request.setAttribute("error", "level is supposed to be a number");
+                        showAllAgent(request, response);
+                        return;
+                    }
+                    
                 }
 
 
                 Agent agent = new Agent();
                 
                 agent.setName(name);
-                agent.setBorn(LocalDate.parse(born));
-                agent.setDied(LocalDate.parse(died));
-                agent.setLevel(Integer.parseInt(level));
+                agent.setBorn(born);
+                agent.setDied(died);
+                agent.setLevel(level);
                 
                 getAgentManager().createAgent(agent);
                 response.sendRedirect(request.getContextPath()+URL_MAPPING);
