@@ -39,8 +39,6 @@ public class AgentServerlet extends HttpServlet {
                 LocalDate born;
                 LocalDate died;
                 int level;
-                
-                //kontrola vyplnění hodnot
                 if (
                         name == null || name.length() == 0 ||
                         request.getParameter("born") == null || request.getParameter("born").length() == 0||
@@ -76,7 +74,12 @@ public class AgentServerlet extends HttpServlet {
                 agent.setBorn(born);
                 agent.setDied(died);
                 agent.setLevel(level);
-                
+                if(level>10){
+                    agent.setLevel(10);
+                }
+                if(level<1){
+                    agent.setLevel(1);
+                }         
                 getAgentManager().createAgent(agent);
                 response.sendRedirect(request.getContextPath()+URL_MAPPING);
                 return;
