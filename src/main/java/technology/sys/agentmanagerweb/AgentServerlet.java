@@ -56,7 +56,6 @@ public class AgentServerlet extends HttpServlet {
                     born = LocalDate.parse(request.getParameter("born"));
                     died = LocalDate.parse(request.getParameter("died"));
                     if(!validateLevel(request,response));
-                    level = Integer.parseInt(request.getParameter("level"));
                 }
                 agent = new Agent();
                 
@@ -94,7 +93,7 @@ public class AgentServerlet extends HttpServlet {
     
     private int getAgentLevel(HttpServletRequest request){
         int level = Integer.parseInt(request.getParameter("level"));
-        if(level>10 || level <0){
+        if(level>10 || level <1){
             if(level>10)
                 level = 10;
             if(level<1)
