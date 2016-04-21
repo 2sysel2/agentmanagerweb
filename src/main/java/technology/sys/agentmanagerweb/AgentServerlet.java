@@ -32,13 +32,16 @@ public class AgentServerlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, ServletException, IOException{
         request.setCharacterEncoding("utf-8");
         String action = request.getPathInfo();
+        Long id;
+        Agent agent;
+        int level;
         switch (action) {
             case "/add":
                 
                 String name = request.getParameter("name");
                 LocalDate born;
                 LocalDate died;
-                int level;
+                
                 if (
                         name == null || name.length() == 0 ||
                         request.getParameter("born") == null || request.getParameter("born").length() == 0||
@@ -49,52 +52,78 @@ public class AgentServerlet extends HttpServlet {
                     showAllAgent(request, response);
                     return;
                 }else{
-                    try{
-                        born = LocalDate.parse(request.getParameter("born"));
-                        died = LocalDate.parse(request.getParameter("died"));
-                    }catch(DateTimeParseException e){
-                        request.setAttribute("error", "date format not correct");
-                        showAllAgent(request, response);
-                        return;
-                    }
-                    try{
-                        level = Integer.parseInt(request.getParameter("level"));
-                    }catch(NumberFormatException e){
-                        request.setAttribute("error", "level is supposed to be a number");
-                        showAllAgent(request, response);
-                        return;
-                    }
-                    
+                    if(!validateLocalDate(request, response))return;
+                    born = LocalDate.parse(request.getParameter("born"));
+                    died = LocalDate.parse(request.getParameter("died"));
+                    if(!validateLevel(request,response));
+                    level = Integer.parseInt(request.getParameter("level"));
                 }
-
-
-                Agent agent = new Agent();
+                agent = new Agent();
                 
                 agent.setName(name);
                 agent.setBorn(born);
                 agent.setDied(died);
-                agent.setLevel(level);
-                if(level>10){
-                    agent.setLevel(10);
-                }
-                if(level<1){
-                    agent.setLevel(1);
-                }         
+                agent.setLevel(getAgentLevel(request));
                 getAgentManager().createAgent(agent);
                 response.sendRedirect(request.getContextPath()+URL_MAPPING);
                 return;
-                    
-                    
             case "/delete":
-                Long id = Long.valueOf(request.getParameter("id"));
+                id = Long.valueOf(request.getParameter("id"));
                 getAgentManager().deleteAgent(getAgentManager().getAgentById(id));
                 response.sendRedirect(request.getContextPath()+URL_MAPPING);
+                return;
+            case "/update":
+                id = Long.valueOf(request.getParameter("id"));
+                agent = getAgentManager().getAgentById(id);
+                agent.setName(request.getParameter("name"));
+                if(!validateLocalDate(request, response))return;
+                agent.setBorn(LocalDate.parse(request.getParameter("born")));
+                agent.setDied(LocalDate.parse(request.getParameter("died")));
+                if(!validateLevel(request, response))return;
+                agent.setLevel(getAgentLevel(request));
+                getAgentManager().updateAgent(agent);
+                response.sendRedirect(request.getContextPath()+URL_MAPPING);
+                return;
         }
     }
 
     private void showAllAgent(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             request.setAttribute("agents", getAgentManager().findAllAgents());
             request.getRequestDispatcher(LIST_JSP).forward(request, response);
+    }
+    
+    private int getAgentLevel(HttpServletRequest request){
+        int level = Integer.parseInt(request.getParameter("level"));
+        if(level>10 || level <0){
+            if(level>10)
+                level = 10;
+            if(level<0)
+                level = 0;
+        }
+        return level;
+    }
+    
+    private boolean validateLocalDate(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        try{
+            LocalDate.parse(request.getParameter("born"));
+            LocalDate.parse(request.getParameter("died"));
+            return true;
+        }catch(DateTimeParseException e){
+            request.setAttribute("error", "date format not correct");
+            showAllAgent(request, response);
+            return false;
+        }
+    }
+    
+    public boolean validateLevel(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        try{
+            Integer.parseInt(request.getParameter("level"));
+            return true;
+        }catch(NumberFormatException e){
+            request.setAttribute("error", "level is supposed to be a number");
+            showAllAgent(request, response);
+            return false;
+        }
     }
     
     private AgentManager getAgentManager(){

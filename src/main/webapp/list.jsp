@@ -11,16 +11,21 @@
         <th>Born</th>
         <th>Died</th>
         <th>Level</th>
+        <th>Update Agent</th>
         <th>Delete Agent</th>
     </tr>
     </thead>
     <c:forEach items="${agents}" var="agent">
         <tr>
+            <form method="post" action="${pageContext.request.contextPath}/agents/update?id=${agent.id}"
+                      style="margin-bottom: 0;">
             <td><c:out value="${agent.id}"/></td>
-            <td><c:out value="${agent.name}"/></td>
-            <td><c:out value="${agent.born}"/></td>
-            <td><c:out value="${agent.died}"/></td>
-            <td><c:out value="${agent.level}"/></td>
+            <td><input type="text" name="name" value="<c:out value="${agent.name}"/>"/></td>
+            <td><input type="text" name="born" value="<c:out value="${agent.born}"/>"/></td>
+            <td><input type="text" name="died" value="<c:out value="${agent.died}"/>"/></td>
+            <td><input type="text" name="level" value="<c:out value="${agent.level}"/>"/></td>
+            <td><input type="submit" value="Update"></td>
+            </form>
             <td><form method="post" action="${pageContext.request.contextPath}/agents/delete?id=${agent.id}"
                       style="margin-bottom: 0;"><input type="submit" value="Delete"></form></td>
         </tr>
