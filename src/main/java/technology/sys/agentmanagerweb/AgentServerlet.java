@@ -97,8 +97,8 @@ public class AgentServerlet extends HttpServlet {
         if(level>10 || level <0){
             if(level>10)
                 level = 10;
-            if(level<0)
-                level = 0;
+            if(level<1)
+                level = 1;
         }
         return level;
     }
